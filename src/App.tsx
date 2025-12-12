@@ -1,6 +1,5 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {SafeAreaView, StatusBar, StyleSheet, View, Text} from 'react-native';
-import {Canvas} from '@shopify/react-native-skia';
 import GameCanvas from './components/GameCanvas';
 
 const App = () => {

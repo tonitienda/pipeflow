@@ -1,6 +1,6 @@
 import React, {useState, useCallback} from 'react';
 import {StyleSheet, Dimensions, TouchableOpacity, Text, View} from 'react-native';
-import {Canvas, Circle, Line, Path, Skia, Group, vec} from '@shopify/react-native-skia';
+import {Canvas, Circle, Line, Path, Skia, vec} from '@shopify/react-native-skia';
 import {Pipe, PipeType, Direction, GameState, Position} from '../types/game';
 import {getConnectionsForPipe} from '../utils/gameLogic';
 
@@ -10,85 +10,85 @@ const GRID_SIZE = 5;
 const CELL_SIZE = CANVAS_SIZE / GRID_SIZE;
 const PIPE_RADIUS = CELL_SIZE * 0.15;
 
+const initializeGame = (): GameState => {
+  const grid: (Pipe | null)[][] = Array(GRID_SIZE)
+    .fill(null)
+    .map(() => Array(GRID_SIZE).fill(null));
+
+  // Set up a simple puzzle
+  const source: Position = {row: 0, col: 0};
+  const target: Position = {row: 4, col: 4};
+
+  // Source pipe
+  grid[0][0] = {
+    type: PipeType.CORNER,
+    rotation: 90,
+    connections: [Direction.RIGHT, Direction.DOWN],
+    isSource: true,
+  };
+
+  // Some initial pipes
+  grid[0][1] = {
+    type: PipeType.STRAIGHT,
+    rotation: 0,
+    connections: [Direction.LEFT, Direction.RIGHT],
+  };
+
+  grid[0][2] = {
+    type: PipeType.CORNER,
+    rotation: 180,
+    connections: [Direction.LEFT, Direction.DOWN],
+  };
+
+  grid[1][2] = {
+    type: PipeType.STRAIGHT,
+    rotation: 90,
+    connections: [Direction.UP, Direction.DOWN],
+  };
+
+  grid[2][2] = {
+    type: PipeType.CORNER,
+    rotation: 270,
+    connections: [Direction.UP, Direction.RIGHT],
+  };
+
+  grid[2][3] = {
+    type: PipeType.STRAIGHT,
+    rotation: 0,
+    connections: [Direction.LEFT, Direction.RIGHT],
+  };
+
+  grid[2][4] = {
+    type: PipeType.CORNER,
+    rotation: 180,
+    connections: [Direction.LEFT, Direction.DOWN],
+  };
+
+  grid[3][4] = {
+    type: PipeType.STRAIGHT,
+    rotation: 90,
+    connections: [Direction.UP, Direction.DOWN],
+  };
+
+  // Target pipe
+  grid[4][4] = {
+    type: PipeType.CORNER,
+    rotation: 270,
+    connections: [Direction.UP, Direction.RIGHT],
+    isTarget: true,
+  };
+
+  return {
+    grid,
+    gridSize: GRID_SIZE,
+    source,
+    target,
+    isComplete: false,
+  };
+};
+
 const GameCanvas = () => {
   const [gameState, setGameState] = useState<GameState>(() => initializeGame());
-
-  const initializeGame = (): GameState => {
-    const grid: (Pipe | null)[][] = Array(GRID_SIZE)
-      .fill(null)
-      .map(() => Array(GRID_SIZE).fill(null));
-
-    // Set up a simple puzzle
-    const source: Position = {row: 0, col: 0};
-    const target: Position = {row: 4, col: 4};
-
-    // Source pipe
-    grid[0][0] = {
-      type: PipeType.CORNER,
-      rotation: 90,
-      connections: [Direction.RIGHT, Direction.DOWN],
-      isSource: true,
-    };
-
-    // Some initial pipes
-    grid[0][1] = {
-      type: PipeType.STRAIGHT,
-      rotation: 0,
-      connections: [Direction.LEFT, Direction.RIGHT],
-    };
-
-    grid[0][2] = {
-      type: PipeType.CORNER,
-      rotation: 180,
-      connections: [Direction.LEFT, Direction.DOWN],
-    };
-
-    grid[1][2] = {
-      type: PipeType.STRAIGHT,
-      rotation: 90,
-      connections: [Direction.UP, Direction.DOWN],
-    };
-
-    grid[2][2] = {
-      type: PipeType.CORNER,
-      rotation: 270,
-      connections: [Direction.UP, Direction.RIGHT],
-    };
-
-    grid[2][3] = {
-      type: PipeType.STRAIGHT,
-      rotation: 0,
-      connections: [Direction.LEFT, Direction.RIGHT],
-    };
-
-    grid[2][4] = {
-      type: PipeType.CORNER,
-      rotation: 180,
-      connections: [Direction.LEFT, Direction.DOWN],
-    };
-
-    grid[3][4] = {
-      type: PipeType.STRAIGHT,
-      rotation: 90,
-      connections: [Direction.UP, Direction.DOWN],
-    };
-
-    // Target pipe
-    grid[4][4] = {
-      type: PipeType.CORNER,
-      rotation: 270,
-      connections: [Direction.UP, Direction.RIGHT],
-      isTarget: true,
-    };
-
-    return {
-      grid,
-      gridSize: GRID_SIZE,
-      source,
-      target,
-      isComplete: false,
-    };
-  };
 
   const handleCellPress = useCallback((row: number, col: number) => {
     setGameState(prev => {
