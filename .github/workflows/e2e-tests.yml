@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,6 +33,11 @@ jobs:
         run: |
           gem install cocoapods
           cd ios && pod install && cd ..
+
+      - name: Install applesimutils
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
 
       - name: Setup iOS Simulator
         run: |
