@@ -139,18 +139,25 @@ const PipeflowScreen = () => {
       });
 
       if (slot) {
-        // Place component in slot
-        const newLevels = [...levels];
-        const levelSlots = newLevels[currentLevelIndex].slots;
-        const slotIndex = levelSlots.findIndex(s => s.id === slot.id);
+        // Check if component is accepted by this slot
+        const isAccepted =
+          !slot.acceptedComponents ||
+          slot.acceptedComponents.includes(component.id);
 
-        if (slotIndex !== -1) {
-          levelSlots[slotIndex] = {
-            ...slot,
-            placedComponent: {...component, slotId: slot.id},
-            highlight: false,
-          };
-          setLevels(newLevels);
+        if (isAccepted) {
+          // Place component in slot
+          const newLevels = [...levels];
+          const levelSlots = newLevels[currentLevelIndex].slots;
+          const slotIndex = levelSlots.findIndex(s => s.id === slot.id);
+
+          if (slotIndex !== -1) {
+            levelSlots[slotIndex] = {
+              ...slot,
+              placedComponent: {...component, slotId: slot.id},
+              highlight: false,
+            };
+            setLevels(newLevels);
+          }
         }
       }
 
@@ -160,10 +167,10 @@ const PipeflowScreen = () => {
   );
 
   const handleDragMove = useCallback(
-    (position: Position) => {
+    (position: Position, component: Component) => {
       setDragPosition(position);
 
-      // Highlight slot if dragging over it
+      // Highlight slot if dragging over it and component is accepted
       const newLevels = [...levels];
       const levelSlots = newLevels[currentLevelIndex].slots;
 
@@ -171,9 +178,12 @@ const PipeflowScreen = () => {
         const dx = slot.position.x - position.x;
         const dy = slot.position.y - position.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+        const isAccepted =
+          !slot.acceptedComponents ||
+          slot.acceptedComponents.includes(component.id);
         levelSlots[index] = {
           ...slot,
-          highlight: distance < COMPONENT_WIDTH,
+          highlight: distance < COMPONENT_WIDTH && isAccepted,
         };
       });
 
@@ -495,7 +505,7 @@ const PipeflowScreen = () => {
 interface DraggableComponentProps {
   component: Component;
   onDragStart: (component: Component) => void;
-  onDragMove: (position: Position) => void;
+  onDragMove: (position: Position, component: Component) => void;
   onDragEnd: (component: Component, position: Position) => void;
 }
 
@@ -513,7 +523,7 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
     })
     .onUpdate(event => {
       setPosition({x: event.absoluteX, y: event.absoluteY});
-      onDragMove({x: event.absoluteX, y: event.absoluteY});
+      onDragMove({x: event.absoluteX, y: event.absoluteY}, component);
     })
     .onEnd(event => {
       onDragEnd(component, {x: event.absoluteX, y: event.absoluteY});
