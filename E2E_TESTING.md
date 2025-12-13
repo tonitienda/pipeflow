@@ -41,8 +41,8 @@ sdkmanager --list | grep system-images
 # Install the required system image if not already installed
 sdkmanager "system-images;android-30;google_apis;x86_64"
 
-# Create the AVD
-avdmanager create avd -n Pixel_3a_API_30_x86 -k "system-images;android-30;google_apis;x86_64" -d "pixel_3a"
+# Create the AVD (without specific device profile)
+avdmanager create avd -n Pixel_3a_API_30_x86 -k "system-images;android-30;google_apis;x86_64"
 ```
 
 #### 3. Build the App for Testing
