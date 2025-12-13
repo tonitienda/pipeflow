@@ -260,7 +260,9 @@ const GameCanvas = () => {
   return (
     <View style={styles.container}>
       <View style={styles.canvasWrapper}>
-        <Canvas style={{width: CANVAS_SIZE, height: CANVAS_SIZE}}>
+        <Canvas
+          style={{width: CANVAS_SIZE, height: CANVAS_SIZE}}
+          pointerEvents="none">
           {renderGrid()}
         </Canvas>
         {createTouchableGrid()}

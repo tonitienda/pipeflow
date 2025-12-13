@@ -71,7 +71,7 @@ This is a visual prototype focusing on UI/UX. The following are intentionally no
 
 ## Testing
 
-Run tests:
+Run unit tests:
 ```bash
 npm test
 ```
@@ -80,6 +80,21 @@ Run linter:
 ```bash
 npm run lint
 ```
+
+### E2E Testing
+
+End-to-end tests are available using Detox. See [E2E_TESTING.md](E2E_TESTING.md) for detailed instructions.
+
+Quick start:
+```bash
+# Build the app for E2E testing
+npm run e2e:build
+
+# Run E2E tests with screenshot capture
+npm run e2e:test
+```
+
+Screenshots are saved to `e2e/screenshots/` after test execution.
 
 ## Development
 

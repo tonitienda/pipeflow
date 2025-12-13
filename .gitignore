@@ -11,5 +11,20 @@ npm-debug.*
 web-build/
 .DS_Store
 *.log
-android/
-ios/
+
+# Android build artifacts
+android/app/build/
+android/.gradle/
+android/build/
+android/app/.cxx/
+android/local.properties
+
+# iOS build artifacts
+ios/Pods/
+ios/build/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+
+# E2E test artifacts
+e2e/screenshots/
+e2e/artifacts/
