@@ -8,7 +8,12 @@ export const getConnectionsForPipe = (
     [PipeType.STRAIGHT]: [Direction.UP, Direction.DOWN],
     [PipeType.CORNER]: [Direction.UP, Direction.RIGHT],
     [PipeType.T_JUNCTION]: [Direction.UP, Direction.RIGHT, Direction.DOWN],
-    [PipeType.CROSS]: [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT],
+    [PipeType.CROSS]: [
+      Direction.UP,
+      Direction.RIGHT,
+      Direction.DOWN,
+      Direction.LEFT,
+    ],
   };
 
   const connections = baseConnections[type];
@@ -18,7 +23,12 @@ export const getConnectionsForPipe = (
 };
 
 const rotateDirection = (direction: Direction, steps: number): Direction => {
-  const directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT];
+  const directions = [
+    Direction.UP,
+    Direction.RIGHT,
+    Direction.DOWN,
+    Direction.LEFT,
+  ];
   const currentIndex = directions.indexOf(direction);
   const newIndex = (currentIndex + steps) % 4;
   return directions[newIndex];
