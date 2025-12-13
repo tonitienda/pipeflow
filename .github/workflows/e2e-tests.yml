@@ -67,9 +67,17 @@ jobs:
           brew tap wix/brew
           brew install applesimutils
 
+      - name: List available simulators
+        run: |
+          echo "Available iOS simulators:"
+          xcrun simctl list devices iPhone
+          echo ""
+          echo "Devices via applesimutils:"
+          applesimutils --list
+
       - name: Setup iOS Simulator
         run: |
-          xcrun simctl boot "iPhone 15" || true
+          xcrun simctl boot "iPhone 13" || true
 
       - name: Build app for Detox
         run: npm run e2e:build
