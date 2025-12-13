@@ -450,7 +450,7 @@ const PipeflowScreen = () => {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={styles.container} testID="pipeflow-screen">
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>PIPEFLOW</Text>
@@ -467,6 +467,7 @@ const PipeflowScreen = () => {
       {/* Level navigation (for testing) */}
       <View style={styles.levelNav}>
         <TouchableOpacity
+          testID="prev-level-button"
           style={[
             styles.navButton,
             currentLevelIndex === 0 && styles.navButtonDisabled,
@@ -476,6 +477,7 @@ const PipeflowScreen = () => {
           <Text style={styles.navButtonText}>← Prev</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          testID="next-level-button"
           style={[
             styles.navButton,
             currentLevelIndex === levels.length - 1 && styles.navButtonDisabled,
@@ -487,7 +489,7 @@ const PipeflowScreen = () => {
       </View>
 
       {/* Component Tray */}
-      <View style={styles.tray}>
+      <View style={styles.tray} testID="component-tray">
         {currentLevel.availableComponents.map((component, index) => (
           <DraggableComponent
             key={`${component.id}-${index}`}

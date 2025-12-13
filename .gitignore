@@ -13,3 +13,7 @@ web-build/
 *.log
 android/
 ios/
+
+# E2E test artifacts
+e2e/screenshots/
+e2e/artifacts/
