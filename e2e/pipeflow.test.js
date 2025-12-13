@@ -46,29 +46,29 @@ describe('PipeFlow E2E Tests', () => {
     // Take initial screenshot
     await device.takeScreenshot('04-level-1-initial');
 
-    // Tap next level button
+    // Tap next level button and wait for the screen to update
     await element(by.id('next-level-button')).tap();
-
-    // Wait briefly for level change
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await waitFor(element(by.id('pipeflow-screen')))
+      .toBeVisible()
+      .withTimeout(2000);
 
     // Take screenshot of level 2
     await device.takeScreenshot('05-level-2');
 
     // Tap next level button again
     await element(by.id('next-level-button')).tap();
-
-    // Wait briefly for level change
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await waitFor(element(by.id('pipeflow-screen')))
+      .toBeVisible()
+      .withTimeout(2000);
 
     // Take screenshot of level 3
     await device.takeScreenshot('06-level-3');
 
     // Go back to previous level
     await element(by.id('prev-level-button')).tap();
-
-    // Wait briefly for level change
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await waitFor(element(by.id('pipeflow-screen')))
+      .toBeVisible()
+      .withTimeout(2000);
 
     // Take screenshot after navigation back
     await device.takeScreenshot('07-level-navigation-back');
