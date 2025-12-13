@@ -28,11 +28,39 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Cache iOS Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/build
+            ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.m', 'ios/**/*.h', 'ios/**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-build-
 
       - name: Install CocoaPods
         run: |
           gem install cocoapods
-          cd ios && pod install && cd ..
+          cd ios
+          if [ ! -d "Pods" ]; then
+            pod install
+          else
+            echo "Using cached Pods"
+          fi
+          cd ..
 
       - name: Install applesimutils
         run: |
