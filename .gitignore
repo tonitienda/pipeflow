@@ -24,7 +24,6 @@ ios/Pods/
 ios/build/
 ios/*.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
-ios/Podfile.lock
 
 # E2E test artifacts
 e2e/screenshots/
