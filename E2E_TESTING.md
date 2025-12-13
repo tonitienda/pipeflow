@@ -154,13 +154,12 @@ E2E tests run automatically on pull requests via the `.github/workflows/e2e-test
 The workflow:
 1. Triggers on pull requests to `main` or `master` branches
 2. Runs on `ubuntu-latest` for Android emulator support
-3. Sets up Node.js environment (v18)
-4. Sets up Java and Android SDK
-5. Installs dependencies
-6. Creates and caches Android emulator (Pixel 3a API 30)
-7. Builds the Android app for testing
-8. Runs E2E tests with screenshot capture on Android emulator
-9. Uploads screenshots as GitHub Actions artifacts
+3. Sets up Node.js environment (v18) and Java 17
+4. Installs dependencies
+5. Builds the Android app for testing
+6. Enables KVM for hardware acceleration
+7. Runs E2E tests with screenshot capture on Android emulator (API 30)
+8. Uploads screenshots as GitHub Actions artifacts
 
 ### Viewing Screenshots from CI
 
