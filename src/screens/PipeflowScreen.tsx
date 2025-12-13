@@ -14,11 +14,7 @@ import {
   Text as SkiaText,
   matchFont,
 } from '@shopify/react-native-skia';
-import {
-  GestureHandlerRootView,
-  GestureDetector,
-  Gesture,
-} from 'react-native-gesture-handler';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Level, Component, Position} from '../types/pipeflow';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -110,86 +106,72 @@ const createLevels = (): Level[] => {
 const PipeflowScreen = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [levels, setLevels] = useState<Level[]>(createLevels());
-  const [_draggedComponent, setDraggedComponent] = useState<Component | null>(
+  const [selectedComponent, setSelectedComponent] = useState<Component | null>(
     null,
   );
-  const [_dragPosition, setDragPosition] = useState<Position>({x: 0, y: 0});
 
   const currentLevel = levels[currentLevelIndex];
 
-  // Create font for Skia text rendering
+  // Create font for Skia text rendering - use Helvetica which is reliably available on iOS
   const font = matchFont({
-    fontFamily: 'System',
-    fontSize: 24,
+    fontFamily: 'Helvetica',
+    fontSize: 20,
     fontWeight: 'bold',
   });
 
-  const handleComponentDragStart = useCallback((component: Component) => {
-    setDraggedComponent(component);
+  // Get components that haven't been placed yet
+  const getAvailableComponents = useCallback(() => {
+    const placedComponentIds = currentLevel.slots
+      .map(slot => slot.placedComponent?.id)
+      .filter(Boolean);
+    return currentLevel.availableComponents.filter(
+      comp => !placedComponentIds.includes(comp.id),
+    );
+  }, [currentLevel]);
+
+  const handleComponentTap = useCallback((component: Component) => {
+    setSelectedComponent(prev =>
+      prev?.id === component.id ? null : component,
+    );
   }, []);
 
-  const handleComponentDragEnd = useCallback(
-    (component: Component, position: Position) => {
-      // Check if dropped on a valid slot
-      const slot = currentLevel.slots.find(s => {
-        const dx = s.position.x - position.x;
-        const dy = s.position.y - position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < COMPONENT_WIDTH;
-      });
-
-      if (slot) {
-        // Check if component is accepted by this slot
-        const isAccepted =
-          !slot.acceptedComponents ||
-          slot.acceptedComponents.includes(component.id);
-
-        if (isAccepted) {
-          // Place component in slot
-          const newLevels = [...levels];
-          const levelSlots = newLevels[currentLevelIndex].slots;
-          const slotIndex = levelSlots.findIndex(s => s.id === slot.id);
-
-          if (slotIndex !== -1) {
-            levelSlots[slotIndex] = {
-              ...slot,
-              placedComponent: {...component, slotId: slot.id},
-              highlight: false,
-            };
-            setLevels(newLevels);
-          }
-        }
-      }
-
-      setDraggedComponent(null);
-    },
-    [currentLevel, levels, currentLevelIndex],
-  );
-
-  const handleDragMove = useCallback(
-    (position: Position, component: Component) => {
-      setDragPosition(position);
-
-      // Highlight slot if dragging over it and component is accepted
+  const handleSlotTap = useCallback(
+    (slotId: string) => {
       const newLevels = [...levels];
       const levelSlots = newLevels[currentLevelIndex].slots;
+      const slotIndex = levelSlots.findIndex(s => s.id === slotId);
 
-      levelSlots.forEach((slot, index) => {
-        const dx = slot.position.x - position.x;
-        const dy = slot.position.y - position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      if (slotIndex === -1) return;
+
+      const slot = levelSlots[slotIndex];
+
+      // If slot has a component, remove it
+      if (slot.placedComponent) {
+        levelSlots[slotIndex] = {
+          ...slot,
+          placedComponent: undefined,
+        };
+        setLevels(newLevels);
+        return;
+      }
+
+      // If a component is selected and slot is empty, place it
+      if (selectedComponent) {
         const isAccepted =
           !slot.acceptedComponents ||
-          slot.acceptedComponents.includes(component.id);
-        levelSlots[index] = {
-          ...slot,
-          highlight: distance < COMPONENT_WIDTH && isAccepted,
-        };
-      });
+          slot.acceptedComponents.includes(selectedComponent.id);
 
-      setLevels(newLevels);
+        if (isAccepted) {
+          levelSlots[slotIndex] = {
+            ...slot,
+            placedComponent: {...selectedComponent, slotId: slot.id},
+          };
+          setLevels(newLevels);
+          setSelectedComponent(null); // Deselect after placing
+        }
+      }
     },
-    [levels, currentLevelIndex],
+    [selectedComponent, levels, currentLevelIndex],
   );
 
   const nextLevel = () => {
@@ -410,17 +392,26 @@ const PipeflowScreen = () => {
           />,
         );
 
-        // Component text
-        elements.push(
-          <SkiaText
-            key={`${slot.id}-comp-text`}
-            x={slot.position.x - 18}
-            y={slot.position.y + 8}
-            text={comp.symbol}
-            font={font}
-            color="#FFFFFF"
-          />,
-        );
+        // Component text - render only if we have a valid symbol
+        if (comp.symbol) {
+          try {
+            const textWidth = font.getMetrics
+              ? font.measureText(comp.symbol).width
+              : 20;
+            elements.push(
+              <SkiaText
+                key={`${slot.id}-comp-text`}
+                x={slot.position.x - textWidth / 2}
+                y={slot.position.y + 8}
+                text={comp.symbol}
+                font={font}
+                color="#FFFFFF"
+              />,
+            );
+          } catch (e) {
+            console.log('Error rendering text:', e);
+          }
+        }
 
         // Draw input ports for multi-input components
         if (comp.inputPorts === 2) {
@@ -459,9 +450,37 @@ const PipeflowScreen = () => {
 
       {/* Board */}
       <View style={styles.boardContainer}>
-        <Canvas style={{width: BOARD_WIDTH, height: BOARD_HEIGHT}}>
-          {renderBoard()}
-        </Canvas>
+        <View
+          style={{
+            width: BOARD_WIDTH,
+            height: BOARD_HEIGHT,
+            position: 'relative',
+          }}>
+          <Canvas
+            style={{
+              width: BOARD_WIDTH,
+              height: BOARD_HEIGHT,
+              position: 'absolute',
+            }}
+            pointerEvents="none">
+            {renderBoard()}
+          </Canvas>
+
+          {/* Touchable slot overlays */}
+          {currentLevel.slots.map(slot => (
+            <TouchableOpacity
+              key={`slot-touch-${slot.id}`}
+              style={{
+                position: 'absolute',
+                left: slot.position.x - COMPONENT_WIDTH / 2,
+                top: slot.position.y - COMPONENT_HEIGHT / 2,
+                width: COMPONENT_WIDTH,
+                height: COMPONENT_HEIGHT,
+              }}
+              onPress={() => handleSlotTap(slot.id)}
+            />
+          ))}
+        </View>
       </View>
 
       {/* Level navigation (for testing) */}
@@ -490,54 +509,20 @@ const PipeflowScreen = () => {
 
       {/* Component Tray */}
       <View style={styles.tray} testID="component-tray">
-        {currentLevel.availableComponents.map((component, index) => (
-          <DraggableComponent
+        {getAvailableComponents().map((component, index) => (
+          <TouchableOpacity
             key={`${component.id}-${index}`}
-            component={component}
-            onDragStart={handleComponentDragStart}
-            onDragMove={handleDragMove}
-            onDragEnd={handleComponentDragEnd}
-          />
+            style={[
+              styles.componentCard,
+              selectedComponent?.id === component.id &&
+                styles.componentCardSelected,
+            ]}
+            onPress={() => handleComponentTap(component)}>
+            <Text style={styles.componentText}>{component.symbol}</Text>
+          </TouchableOpacity>
         ))}
       </View>
     </GestureHandlerRootView>
-  );
-};
-
-interface DraggableComponentProps {
-  component: Component;
-  onDragStart: (component: Component) => void;
-  onDragMove: (position: Position, component: Component) => void;
-  onDragEnd: (component: Component, position: Position) => void;
-}
-
-const DraggableComponent: React.FC<DraggableComponentProps> = ({
-  component,
-  onDragStart,
-  onDragMove,
-  onDragEnd,
-}) => {
-  const [_position, setPosition] = useState({x: 0, y: 0});
-
-  const gesture = Gesture.Pan()
-    .onStart(() => {
-      onDragStart(component);
-    })
-    .onUpdate(event => {
-      setPosition({x: event.absoluteX, y: event.absoluteY});
-      onDragMove({x: event.absoluteX, y: event.absoluteY}, component);
-    })
-    .onEnd(event => {
-      onDragEnd(component, {x: event.absoluteX, y: event.absoluteY});
-      setPosition({x: 0, y: 0});
-    });
-
-  return (
-    <GestureDetector gesture={gesture}>
-      <View style={styles.componentCard}>
-        <Text style={styles.componentText}>{component.symbol}</Text>
-      </View>
-    </GestureDetector>
   );
 };
 
@@ -614,6 +599,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  componentCardSelected: {
+    backgroundColor: '#2563EB',
+    borderWidth: 3,
+    borderColor: '#F59E0B',
   },
   componentText: {
     fontSize: 20,
