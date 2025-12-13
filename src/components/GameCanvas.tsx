@@ -1,6 +1,19 @@
 import React, {useState, useCallback} from 'react';
-import {StyleSheet, Dimensions, TouchableOpacity, Text, View} from 'react-native';
-import {Canvas, Circle, Line, Path, Skia, vec} from '@shopify/react-native-skia';
+import {
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Text,
+  View,
+} from 'react-native';
+import {
+  Canvas,
+  Circle,
+  Line,
+  Path,
+  Skia,
+  vec,
+} from '@shopify/react-native-skia';
 import {Pipe, PipeType, Direction, GameState, Position} from '../types/game';
 import {getConnectionsForPipe} from '../utils/gameLogic';
 
@@ -142,7 +155,9 @@ const GameCanvas = () => {
         <Path
           key={`${x}-${y}-${index}`}
           path={path}
-          color={pipe.isSource ? '#4CAF50' : pipe.isTarget ? '#F44336' : '#2196F3'}
+          color={
+            pipe.isSource ? '#4CAF50' : pipe.isTarget ? '#F44336' : '#2196F3'
+          }
           style="stroke"
           strokeWidth={PIPE_RADIUS * 2}
           strokeCap="round"
@@ -151,9 +166,19 @@ const GameCanvas = () => {
     });
 
     // Center circle
-    const color = pipe.isSource ? '#4CAF50' : pipe.isTarget ? '#F44336' : '#2196F3';
+    const color = pipe.isSource
+      ? '#4CAF50'
+      : pipe.isTarget
+      ? '#F44336'
+      : '#2196F3';
     paths.push(
-      <Circle key={`${x}-${y}-center`} cx={centerX} cy={centerY} r={PIPE_RADIUS} color={color} />,
+      <Circle
+        key={`${x}-${y}-center`}
+        cx={centerX}
+        cy={centerY}
+        r={PIPE_RADIUS}
+        color={color}
+      />,
     );
 
     return paths;
