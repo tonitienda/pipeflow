@@ -174,7 +174,7 @@ The Detox configuration file defines:
 
 - **Test runner**: Jest
 - **App build configuration**: iOS debug build
-- **Device**: iPhone 14 simulator
+- **Device**: iPhone 15 simulator
 - **Artifacts**: Screenshot settings
 
 ### Screenshot Settings
@@ -228,9 +228,9 @@ If tests fail:
 
 If the simulator doesn't start:
 
-1. Boot the simulator manually: `xcrun simctl boot "iPhone 14"`
+1. Boot the simulator manually: `xcrun simctl boot "iPhone 15"`
 2. Try a different simulator device
-3. Reset the simulator: `xcrun simctl erase "iPhone 14"`
+3. Reset the simulator: `xcrun simctl erase "iPhone 15"`
 
 ## Best Practices
 

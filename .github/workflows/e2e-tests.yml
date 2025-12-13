@@ -69,7 +69,7 @@ jobs:
 
       - name: Setup iOS Simulator
         run: |
-          xcrun simctl boot "iPhone 14" || true
+          xcrun simctl boot "iPhone 15" || true
 
       - name: Build app for Detox
         run: npm run e2e:build
