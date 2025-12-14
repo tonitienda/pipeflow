@@ -81,6 +81,11 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    
+    buildFeatures {
+        buildConfig true
+    }
+    
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -100,6 +105,14 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+}
+
+// Force compatible androidx.core versions for AGP 8.0.2 and compileSdk 34
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.core:core-ktx:1.13.1'
     }
 }
 

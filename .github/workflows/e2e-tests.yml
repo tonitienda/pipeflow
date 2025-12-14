@@ -6,7 +6,7 @@ on:
 
 jobs:
   e2e-tests:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
       contents: read
@@ -24,58 +24,47 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          ruby-version: '3.1'
-          bundler-cache: true
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Cache CocoaPods
+      - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
-            ios/Pods
-            ~/Library/Caches/CocoaPods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: Cache iOS Build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ios/build
-            ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-ios-build-${{ hashFiles('ios/**/*.m', 'ios/**/*.h', 'ios/**/*.swift') }}
-          restore-keys: |
-            ${{ runner.os }}-ios-build-
-
-      - name: Install CocoaPods
-        run: |
-          gem install cocoapods
-          cd ios
-          if [ ! -d "Pods" ]; then
-            pod install
-          else
-            echo "Using cached Pods"
-          fi
-          cd ..
-
-      - name: Install applesimutils
-        run: |
-          brew tap wix/brew
-          brew install applesimutils
-
-      - name: Setup iOS Simulator
-        run: |
-          xcrun simctl boot "iPhone 14" || true
+            ${{ runner.os }}-gradle-
 
       - name: Build app for Detox
-        run: npm run e2e:build
+        run: npm run e2e:build:android
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Run E2E tests
-        run: npm run e2e:test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: >-
+            -no-window
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -camera-back none
+            -memory 4096
+          disable-animations: true
+          script: npm run e2e:test:android
 
       - name: Upload screenshots
         if: always()
