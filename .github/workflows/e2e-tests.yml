@@ -76,7 +76,6 @@ jobs:
             -camera-back none
             -memory 4096
           disable-animations: true
-          disable-spellchecker: true
           script: |
             echo "=== Checking ADB devices ==="
             adb devices
