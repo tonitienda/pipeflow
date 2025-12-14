@@ -1,0 +1,20 @@
+// Configure Kotlin JVM target for all subprojects
+subprojects {
+    afterEvaluate { subproject ->
+        // Check if the subproject has any Kotlin compilation tasks
+        subproject.tasks.matching { task ->
+            task.name.contains('compileDebugKotlin') || 
+            task.name.contains('compileReleaseKotlin') ||
+            task.name.contains('Kotlin')
+        }.configureEach { task ->
+            try {
+                // Configure kotlinOptions if available
+                if (task.hasProperty('kotlinOptions')) {
+                    task.kotlinOptions.jvmTarget = '11'
+                }
+            } catch (Exception e) {
+                // Ignore tasks that don't support kotlinOptions
+            }
+        }
+    }
+}

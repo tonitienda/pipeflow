@@ -20,16 +20,4 @@ buildscript {
     }
 }
 
-subprojects {
-    afterEvaluate {
-        try {
-            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions {
-                    jvmTarget = "11"
-                }
-            }
-        } catch (Exception e) {
-            // Kotlin plugin not applied to this subproject
-        }
-    }
-}
+apply from: "kotlin-options.gradle"
