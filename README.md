@@ -94,7 +94,7 @@ npm run e2e:build
 npm run e2e:test
 ```
 
-Screenshots are saved to `e2e/screenshots/` after test execution.
+Screenshots are saved to `e2e/artifacts/` after test execution.
 
 ## Development
 

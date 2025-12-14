@@ -45,7 +45,7 @@ module.exports = {
     },
   },
   artifacts: {
-    rootDir: './e2e/screenshots',
+    rootDir: './e2e/artifacts',
     plugins: {
       screenshot: {
         enabled: true,
@@ -54,7 +54,12 @@ module.exports = {
         takeWhen: {
           testStart: false,
           testDone: true,
+          testFailure: true,
         },
+      },
+      log: {
+        enabled: true,
+        keepOnlyFailedTestsArtifacts: false,
       },
     },
   },
