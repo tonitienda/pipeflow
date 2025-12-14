@@ -20,4 +20,9 @@ buildscript {
     }
 }
 
-apply from: "kotlin-options.gradle"
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
