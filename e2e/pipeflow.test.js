@@ -88,7 +88,7 @@ describe('PipeFlow E2E Tests', () => {
     // Go back to level 1 for a simple test
     await element(by.id('prev-level-button')).tap();
     await element(by.id('prev-level-button')).tap();
-    
+
     // Wait for level to load
     await waitFor(element(by.id('pipeflow-screen')))
       .toBeVisible()
