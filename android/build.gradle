@@ -21,10 +21,12 @@ buildscript {
 }
 
 subprojects {
-    tasks.configureEach { task ->
-        if (task.hasProperty("kotlinOptions")) {
-            task.kotlinOptions {
-                jvmTarget = "11"
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.hasProperty("kotlinOptions")) {
+                task.kotlinOptions {
+                    jvmTarget = "11"
+                }
             }
         }
     }
