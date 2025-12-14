@@ -25,7 +25,9 @@ pipeflow/
 ## Key Components
 
 ### PipeflowScreen.tsx
+
 This is the main game screen component:
+
 - Uses `@shopify/react-native-skia` primitives (Canvas, Circle, Path, Text)
 - Uses `react-native-gesture-handler` for drag & drop
 - Manages game state with React hooks
@@ -34,7 +36,9 @@ This is the main game screen component:
 - Handles component drag and drop with visual feedback
 
 ### Types (pipeflow.ts)
+
 The game uses these main types:
+
 - **Node**: Input/output nodes with values
 - **Component**: Mathematical operations (×2, +1, etc.)
 - **ComponentSlot**: Placeholders on the board for components
@@ -45,6 +49,7 @@ The game uses these main types:
 ## Skia Integration
 
 The game uses Skia's high-performance rendering:
+
 - **Canvas**: Main drawing surface
 - **Circle**: Renders nodes and ports
 - **Path**: Creates curved pipes and component backgrounds
@@ -54,6 +59,7 @@ The game uses Skia's high-performance rendering:
 ## Gesture Handler Integration
 
 Drag & drop functionality:
+
 - **GestureHandlerRootView**: Wraps the entire screen
 - **GestureDetector**: Detects pan gestures on components
 - **Gesture.Pan()**: Handles drag start, update, and end events
@@ -61,17 +67,20 @@ Drag & drop functionality:
 ## Testing
 
 Run tests:
+
 ```bash
 npm test
 ```
 
 Tests include:
+
 - Component rendering tests
 - Legacy game logic tests (for reference)
 
 ### Test Mocks
 
 Jest is configured to mock:
+
 - `@shopify/react-native-skia` - Canvas rendering APIs
 - `react-native-gesture-handler` - Gesture detection APIs
 
@@ -99,6 +108,7 @@ const createLevels = (): Level[] => {
 ```
 
 Each level defines:
+
 - Input and goal values
 - Component slot positions
 - Available components in the tray
@@ -107,18 +117,21 @@ Each level defines:
 ## Adding New Features
 
 ### Adding a New Level
+
 1. Add a new level object to the `createLevels()` function array
 2. Define slot positions (hardcoded x, y coordinates)
 3. Define available components
 4. Define visual connections
 
 ### Adding a New Component Type
+
 1. Add the component to a level's `availableComponents` array
 2. Include the symbol (display text like "×3")
 3. Optionally specify operation and operand
 4. For multi-input components, set `inputPorts: 2`
 
 ### Modifying Visual Style
+
 - Colors are defined inline in the component
 - Node radius and component sizes are constants at the top of `PipeflowScreen.tsx`
 - Teal/blue/gray color palette:
@@ -129,9 +142,52 @@ Each level defines:
   - Slots: `#E5E7EB` (gray)
   - Highlight: `#FCD34D` (yellow)
 
+## Testing Locally
+
+### Unit Tests & Linting (No special setup needed)
+
+```bash
+npm run lint          # Run ESLint
+npm test              # Run Jest unit tests
+npx tsc --noEmit      # TypeScript type checking
+```
+
+### iOS E2E Tests (Requires Xcode)
+
+```bash
+npm run e2e:build     # Build iOS app for testing
+npm run e2e:test      # Run Detox E2E tests
+```
+
+### Android E2E Tests
+
+#### Option A: Using Docker (Recommended - no local Java/Android SDK needed)
+
+```bash
+# Build Android APKs using Docker
+./scripts/android-build-docker.sh
+
+# Build E2E test APKs
+./scripts/android-test-docker.sh
+```
+
+The Docker approach uses the official React Native Android image and avoids installing Java 17 and Android SDK locally.
+
+#### Option B: Native Build (Requires Java 17 + Android SDK)
+
+```bash
+# Install Java 17
+brew install openjdk@17
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+
+# Build
+cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
+```
+
 ## Current Limitations (By Design)
 
 This is a visual prototype, so:
+
 - No game logic or validation is implemented
 - Components can be placed multiple times (no removal from tray)
 - No calculations are performed
@@ -142,6 +198,7 @@ This is a visual prototype, so:
 ## Future Development
 
 When implementing game logic:
+
 1. Add calculation engine in `src/utils/`
 2. Add validation for component placement
 3. Add execution flow visualization
