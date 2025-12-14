@@ -108,18 +108,17 @@ android {
     }
 }
 
+// Force compatible androidx.core versions for AGP 8.0.2 and compileSdk 34
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.core:core-ktx:1.13.1'
+    }
+}
+
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
-    // Force compatible androidx.core versions for AGP 8.0.2 and compileSdk 34
-    // Using implementation instead of constraints to forcefully override transitive dependencies
-    implementation("androidx.core:core:1.13.1") {
-        force = true
-    }
-    implementation("androidx.core:core-ktx:1.13.1") {
-        force = true
-    }
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
