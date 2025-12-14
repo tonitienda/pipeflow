@@ -39,10 +39,10 @@ Create an AVD (Android Virtual Device) that matches the CI configuration:
 sdkmanager --list | grep system-images
 
 # Install the required system image if not already installed
-sdkmanager "system-images;android-30;google_apis;x86_64"
+sdkmanager "system-images;android-31;google_apis;x86_64"
 
 # Create the AVD (without specific device profile)
-avdmanager create avd -n Pixel_3a_API_30_x86 -k "system-images;android-30;google_apis;x86_64"
+avdmanager create avd -n Pixel_3a_API_31_x86 -k "system-images;android-31;google_apis;x86_64"
 ```
 
 #### 3. Build the App for Testing
@@ -59,7 +59,7 @@ Start the emulator first, then run tests:
 
 ```bash
 # Start emulator in background
-emulator -avd Pixel_3a_API_30_x86 &
+emulator -avd Pixel_3a_API_31_x86 &
 
 # Wait for emulator to boot, then run tests
 npm run e2e:test:android
@@ -158,7 +158,7 @@ The workflow:
 4. Installs dependencies
 5. Builds the Android app for testing
 6. Enables KVM for hardware acceleration
-7. Runs E2E tests with screenshot capture on Android emulator (API 30)
+7. Runs E2E tests with screenshot capture on Android emulator (API 31)
 8. Uploads screenshots as GitHub Actions artifacts
 
 ### Viewing Screenshots from CI
@@ -237,7 +237,7 @@ The Detox configuration file defines:
   - Android debug build for Pixel 3a API 30 emulator
 - **Devices**: 
   - iOS: iPhone 13 simulator
-  - Android: Pixel_3a_API_30_x86 emulator (used in CI)
+  - Android: Pixel_3a_API_31_x86 emulator (used in CI)
 - **Artifacts**: Screenshot settings
 
 ### Screenshot Settings
@@ -308,7 +308,7 @@ For iOS tests:
 For Android:
 
 1. List available AVDs: `emulator -list-avds`
-2. Start emulator manually: `emulator -avd Pixel_3a_API_30_x86`
+2. Start emulator manually: `emulator -avd Pixel_3a_API_31_x86`
 3. Check emulator logs: `adb logcat`
 
 For iOS:
