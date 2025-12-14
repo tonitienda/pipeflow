@@ -113,13 +113,12 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     // Force compatible androidx.core versions for AGP 8.0.2 and compileSdk 34
-    constraints {
-        implementation("androidx.core:core:1.13.1") {
-            because("Version 1.16.0 requires AGP 8.6.0+ and compileSdk 35, but we use AGP 8.0.2 with compileSdk 34")
-        }
-        implementation("androidx.core:core-ktx:1.13.1") {
-            because("Version 1.16.0 requires AGP 8.6.0+ and compileSdk 35, but we use AGP 8.0.2 with compileSdk 34")
-        }
+    // Using implementation instead of constraints to forcefully override transitive dependencies
+    implementation("androidx.core:core:1.13.1") {
+        force = true
+    }
+    implementation("androidx.core:core-ktx:1.13.1") {
+        force = true
     }
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
