@@ -15,7 +15,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.0.2")
+        classpath("com.android.tools.build:gradle:8.1.4")
         classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
@@ -24,30 +24,5 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-    }
-    
-    afterEvaluate { project ->
-        // Configure Java compile options for all Android projects
-        if (project.hasProperty('android')) {
-            project.android {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
-                }
-            }
-        }
-        
-        // Configure Kotlin tasks
-        project.tasks.configureEach { task ->
-            if (task.name.startsWith('compile') && task.name.toLowerCase().contains('kotlin')) {
-                try {
-                    task.kotlinOptions {
-                        jvmTarget = '17'
-                    }
-                } catch (Exception ignored) {
-                    // Task doesn't have kotlinOptions
-                }
-            }
-        }
     }
 }
