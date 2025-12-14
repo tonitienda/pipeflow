@@ -22,7 +22,7 @@ buildscript {
 
 subprojects {
     tasks.configureEach { task ->
-        if (task.class.name.contains("KotlinCompile")) {
+        if (task.hasProperty("kotlinOptions")) {
             task.kotlinOptions {
                 jvmTarget = "11"
             }
