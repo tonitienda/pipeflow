@@ -22,12 +22,14 @@ buildscript {
 
 subprojects {
     afterEvaluate {
-        tasks.configureEach { task ->
-            if (task.hasProperty("kotlinOptions")) {
-                task.kotlinOptions {
+        try {
+            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions {
                     jvmTarget = "11"
                 }
             }
+        } catch (Exception e) {
+            // Kotlin plugin not applied to this subproject
         }
     }
 }
