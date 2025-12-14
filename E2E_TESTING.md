@@ -39,10 +39,10 @@ Create an AVD (Android Virtual Device) that matches the CI configuration:
 sdkmanager --list | grep system-images
 
 # Install the required system image if not already installed
-sdkmanager "system-images;android-30;google_apis;x86_64"
+sdkmanager "system-images;android-31;google_apis;x86_64"
 
 # Create the AVD (without specific device profile)
-avdmanager create avd -n Pixel_3a_API_30_x86 -k "system-images;android-30;google_apis;x86_64"
+avdmanager create avd -n Pixel_3a_API_31_x86 -k "system-images;android-31;google_apis;x86_64"
 ```
 
 #### 3. Build the App for Testing
@@ -59,7 +59,7 @@ Start the emulator first, then run tests:
 
 ```bash
 # Start emulator in background
-emulator -avd Pixel_3a_API_30_x86 &
+emulator -avd Pixel_3a_API_31_x86 &
 
 # Wait for emulator to boot, then run tests
 npm run e2e:test:android
@@ -123,9 +123,9 @@ This test suite verifies:
 
 ## Screenshot Capture
 
-Screenshots are automatically captured during test execution:
+Screenshots and artifacts are automatically captured during test execution:
 
-- **Location**: `e2e/screenshots/`
+- **Location**: `e2e/artifacts/`
 - **Format**: PNG files with descriptive names
 - **Naming**: Sequential numbers with descriptive labels (e.g., `01-app-launched.png`)
 - **Capture Points**:
@@ -134,13 +134,14 @@ Screenshots are automatically captured during test execution:
   - Component tray
   - Each level transition
   - Final state
+  - On test failures
 
 ### Viewing Local Screenshots
 
 After running tests, screenshots are saved to:
 
 ```
-e2e/screenshots/
+e2e/artifacts/
 ```
 
 Open this folder to view all captured screenshots from your test run.
@@ -158,7 +159,7 @@ The workflow:
 4. Installs dependencies
 5. Builds the Android app for testing
 6. Enables KVM for hardware acceleration
-7. Runs E2E tests with screenshot capture on Android emulator (API 30)
+7. Runs E2E tests with screenshot capture on Android emulator (API 31)
 8. Uploads screenshots as GitHub Actions artifacts
 
 ### Viewing Screenshots from CI
@@ -237,7 +238,7 @@ The Detox configuration file defines:
   - Android debug build for Pixel 3a API 30 emulator
 - **Devices**: 
   - iOS: iPhone 13 simulator
-  - Android: Pixel_3a_API_30_x86 emulator (used in CI)
+  - Android: Pixel_3a_API_31_x86 emulator (used in CI)
 - **Artifacts**: Screenshot settings
 
 ### Screenshot Settings
@@ -246,7 +247,7 @@ Screenshots are configured in `.detoxrc.js`:
 
 ```javascript
 artifacts: {
-  rootDir: './e2e/screenshots',
+  rootDir: './e2e/artifacts',
   plugins: {
     screenshot: {
       enabled: true,
@@ -255,17 +256,23 @@ artifacts: {
       takeWhen: {
         testStart: false,
         testDone: true,
+        testFailure: true,
       },
+    },
+    log: {
+      enabled: true,
+      keepOnlyFailedTestsArtifacts: false,
     },
   },
 }
 ```
 
 This configuration:
-- Saves screenshots to `e2e/screenshots/`
-- Captures screenshots when tests complete
+- Saves screenshots and logs to `e2e/artifacts/`
+- Captures screenshots when tests complete and on failures
 - Keeps screenshots from both passing and failing tests
 - Allows manual screenshots via `device.takeScreenshot()`
+- Captures device logs for debugging
 
 ## Troubleshooting
 
@@ -294,21 +301,21 @@ For Android tests:
 1. Check that the emulator is running: `adb devices`
 2. Ensure the app builds successfully: `npm run e2e:build:android`
 3. Check test logs for specific error messages
-4. Review screenshots in `e2e/screenshots/` for visual clues
+4. Review screenshots in `e2e/artifacts/` for visual clues
 
 For iOS tests:
 
 1. Check that the simulator is available: `xcrun simctl list devices`
 2. Ensure the app builds successfully: `npm run e2e:build`
 3. Check test logs for specific error messages
-4. Review screenshots in `e2e/screenshots/` for visual clues
+4. Review screenshots in `e2e/artifacts/` for visual clues
 
 ### Emulator/Simulator Issues
 
 For Android:
 
 1. List available AVDs: `emulator -list-avds`
-2. Start emulator manually: `emulator -avd Pixel_3a_API_30_x86`
+2. Start emulator manually: `emulator -avd Pixel_3a_API_31_x86`
 3. Check emulator logs: `adb logcat`
 
 For iOS:

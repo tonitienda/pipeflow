@@ -40,8 +40,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
       - name: Build app for Detox
         run: npm run e2e:build:android
+
+      - name: Verify APK was built
+        run: |
+          if [ ! -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "Error: APK not found"
+            exit 1
+          fi
+          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Enable KVM group perms
         run: |
@@ -51,8 +62,9 @@ jobs:
 
       - name: Run E2E tests
         uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
         with:
-          api-level: 30
+          api-level: 31
           target: google_apis
           arch: x86_64
           force-avd-creation: false
@@ -64,14 +76,22 @@ jobs:
             -camera-back none
             -memory 4096
           disable-animations: true
-          script: npm run e2e:test:android
+          script: |
+            echo "=== Checking ADB devices ==="
+            adb devices
+            echo "=== Disabling animations ==="
+            adb shell settings put global window_animation_scale 0.0
+            adb shell settings put global transition_animation_scale 0.0
+            adb shell settings put global animator_duration_scale 0.0
+            echo "=== Running E2E tests ==="
+            npm run e2e:test:android
 
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-screenshots
-          path: e2e/screenshots/**/*
+          path: e2e/artifacts/**/*.png
           retention-days: 30
           if-no-files-found: warn
 
