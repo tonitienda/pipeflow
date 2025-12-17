@@ -31,3 +31,6 @@ e2e/artifacts/
 
 # Test coverage
 coverage/
+android/
+ios/
+__tests__/__snapshots__/
