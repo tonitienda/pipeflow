@@ -23,11 +23,13 @@ PipeFlow is a puzzle game where you solve mathematical challenges by dragging an
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Run on iOS:
+
    ```bash
    npm run ios
    ```
@@ -54,6 +56,7 @@ PipeFlow is a puzzle game where you solve mathematical challenges by dragging an
 ## What's NOT Implemented (By Design)
 
 This is a visual prototype focusing on UI/UX. The following are intentionally not implemented:
+
 - ❌ Game logic and validation
 - ❌ Mathematical calculations
 - ❌ Animations beyond basic highlighting
@@ -63,38 +66,54 @@ This is a visual prototype focusing on UI/UX. The following are intentionally no
 
 ## Technology Stack
 
-- React Native 0.72.6
-- @shopify/react-native-skia for canvas rendering
+- React Native 0.83.0
+- @shopify/react-native-skia 2.4.7 for canvas rendering
 - react-native-gesture-handler for drag & drop
 - TypeScript for type safety
 - React hooks for state management
 
 ## Testing
 
-Run unit tests:
+Run unit and snapshot tests:
+
 ```bash
 npm test
 ```
 
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+Update snapshots after intentional UI changes:
+
+```bash
+npm run test:update-snapshots
+```
+
 Run linter:
+
 ```bash
 npm run lint
 ```
 
-### E2E Testing
+See [TESTING.md](TESTING.md) for detailed testing guide.
 
-End-to-end tests are available using Detox. See [E2E_TESTING.md](E2E_TESTING.md) for detailed instructions.
+### CI Testing
 
-Quick start:
-```bash
-# Build the app for E2E testing
-npm run e2e:build
+Component snapshot tests run automatically on:
 
-# Run E2E tests with screenshot capture
-npm run e2e:test
-```
+- Push to `main`/`master`
+- Pull requests
 
-Screenshots are saved to `e2e/artifacts/` after test execution.
+CI generates:
+
+- Test snapshots for visual review
+- Coverage reports
+- PR comments with test summaries
+
+Download artifacts from GitHub Actions to review snapshots and verify UI changes.
 
 ## Development
 

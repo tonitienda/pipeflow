@@ -15,6 +15,9 @@ jest.mock('@shopify/react-native-skia', () => ({
   },
   Text: 'Text',
   matchFont: jest.fn(() => ({})),
+  Group: 'Group',
+  RoundedRect: 'RoundedRect',
+  useFont: jest.fn(() => null),
 }));
 
 // Mock react-native-gesture-handler
@@ -23,9 +26,18 @@ jest.mock('react-native-gesture-handler', () => ({
   GestureDetector: 'GestureDetector',
   Gesture: {
     Pan: jest.fn(() => ({
+      onBegin: jest.fn().mockReturnThis(),
       onStart: jest.fn().mockReturnThis(),
       onUpdate: jest.fn().mockReturnThis(),
       onEnd: jest.fn().mockReturnThis(),
+      onFinalize: jest.fn().mockReturnThis(),
     })),
   },
 }));
+
+// Silence console warnings during tests
+global.console = {
+  ...console,
+  warn: jest.fn(),
+  error: jest.fn(),
+};

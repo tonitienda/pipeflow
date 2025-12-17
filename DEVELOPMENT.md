@@ -16,11 +16,25 @@ pipeflow/
 │   └── utils/
 │       └── gameLogic.ts            # Legacy game logic (not used)
 ├── __tests__/                       # Test files
-│   ├── App.test.tsx
-│   └── gameLogic.test.ts
+│   ├── App.test.tsx                 # Main app snapshot tests
+│   ├── PipeflowScreen.test.tsx      # Game screen snapshot tests
+│   └── gameLogic.test.ts            # Legacy logic tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # CI workflow for tests
 ├── jest.setup.js                    # Jest configuration and mocks
+├── jest.config.js                   # Jest configuration
 └── index.js                         # Entry point
 ```
+
+## Technology Stack
+
+- **React Native 0.83.0** - Latest stable release (Dec 2024)
+- **React 19.0.0** - Latest React
+- **@shopify/react-native-skia 2.4.7** - Canvas rendering
+- **react-native-gesture-handler 2.22.2** - Gestures and drag/drop
+- **@testing-library/react-native 12.9.0** - Component testing
+- **Jest 29.7.0** - Test runner
 
 ## Key Components
 

@@ -28,3 +28,6 @@ ios/*.xcodeproj/xcuserdata/
 # E2E test artifacts
 e2e/screenshots/
 e2e/artifacts/
+
+# Test coverage
+coverage/

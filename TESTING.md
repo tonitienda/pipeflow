@@ -1,107 +1,217 @@
-# Quick Testing Guide
+# Testing Guide
 
-## ✅ What's Been Fixed
+## Overview
 
-- **Kotlin version** updated from 1.8.0 to 1.9.20 in `android/build.gradle` to fix CI build errors
+PipeFlow uses **component snapshot testing** with Jest and React Native Testing Library. This approach allows us to:
 
-## 🧪 Testing Locally (Fast Iteration)
+- ✅ Test component rendering without simulators/emulators
+- ✅ Generate visual snapshots for PR review
+- ✅ Run tests quickly in CI/CD
+- ✅ Verify UI changes without manual testing
 
-### 1. Quick Tests (Always run these before pushing)
+## Running Tests
 
-```bash
-npm run lint          # ESLint checks (4 warnings, 0 errors currently)
-npm test              # Unit tests (all passing ✅)
-npx tsc --noEmit      # TypeScript type checking
-```
-
-### 2. iOS E2E Tests (if you have Xcode)
+### Locally
 
 ```bash
-npm run e2e:build     # Build iOS app
-npm run e2e:test      # Run Detox tests on simulator
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Update snapshots after intentional UI changes
+npm run test:update-snapshots
+
+# Run with coverage report
+npm test -- --coverage
 ```
 
-### 3. Android E2E Tests (Docker - No Java/Android SDK needed!)
+### In CI
+
+Tests run automatically on:
+
+- Push to `main`/`master` branches
+- Pull requests to `main`/`master`
+
+CI outputs:
+
+- Test snapshots (uploaded as artifacts)
+- Coverage reports (uploaded as artifacts)
+- PR comment with test summary
+
+## Snapshot Testing
+
+### What are Snapshots?
+
+Snapshots capture the rendered component tree and save it as a reference. Future test runs compare against this reference to detect unintended changes.
+
+### When to Update Snapshots
+
+Update snapshots when you've made **intentional** UI changes:
 
 ```bash
-# First time: Builds Docker image with React Native Android environment
-./scripts/android-build-docker.sh
-
-# To build E2E test APKs
-./scripts/android-test-docker.sh
+npm run test:update-snapshots
 ```
 
-**Why Docker?**
+⚠️ **Warning**: Only update snapshots after verifying changes are correct!
 
-- ✅ No need to install Java 17 locally
-- ✅ No need to install Android SDK
-- ✅ Uses official React Native Android image
-- ✅ Caches Gradle dependencies between runs
-- ⚠️ First run takes ~5-10 min to download image
+### Reviewing Snapshots in PRs
 
-## 📋 Pre-Push Checklist
+1. Check the uploaded snapshot artifacts in GitHub Actions
+2. Compare with previous snapshots to verify changes
+3. Review the diff in `__tests__/__snapshots__/` files
 
-Before pushing to GitHub (to avoid CI failures):
+## Test Structure
 
-1. ✅ Run `npm run lint` - should have 0 errors (warnings OK)
-2. ✅ Run `npm test` - all tests should pass
-3. ✅ Optional: Build Android with Docker to verify Gradle build
-4. ✅ Optional: Run iOS E2E tests if you modified UI
+### Component Tests
 
-## 🐳 Docker Commands Reference
+Tests are located in `__tests__/` directory:
 
-```bash
-# Build just the Android debug APK
-./scripts/android-build-docker.sh
+- `App.test.tsx` - Main app component
+- `PipeflowScreen.test.tsx` - Game screen with full layout
+- `gameLogic.test.ts` - Game logic utilities
 
-# Build the E2E test APKs
-./scripts/android-test-docker.sh
+### Screenshot Strategy
 
-# Rebuild Docker image (if needed)
-docker build -t pipeflow-android -f Dockerfile.android .
+We focus on **full screen snapshots** rather than individual component snapshots to:
 
-# Clean up Docker image
-docker rmi pipeflow-android
+- Get a complete view of the UI
+- Reduce the number of test files to maintain
+- Make PR reviews easier with comprehensive screenshots
+
+## CI Workflow
+
+### What CI Does
+
+1. **Install dependencies** - `npm ci`
+2. **Lint code** - `npm run lint`
+3. **Run tests** - `npm test` (with coverage)
+4. **Upload artifacts**:
+   - Test snapshots from `__tests__/__snapshots__/`
+   - Coverage reports from `coverage/`
+5. **Comment on PR** - Summary of test results
+
+### Artifacts
+
+After each CI run, download artifacts to review:
+
+- **test-snapshots** - JSON snapshots of rendered components
+- **coverage-report** - HTML coverage report
+
+## Writing New Tests
+
+### Example: Screen Snapshot Test
+
+```typescript
+import React from 'react';
+import {render} from '@testing-library/react-native';
+import MyScreen from '../src/screens/MyScreen';
+
+describe('MyScreen', () => {
+  it('renders the complete screen correctly', () => {
+    const {toJSON} = render(<MyScreen />);
+    expect(toJSON()).toMatchSnapshot();
+  });
+});
 ```
 
-## 🔧 Alternative: Native Android Setup
+### Example: Component with Interaction
 
-If you prefer not to use Docker:
+```typescript
+import React from 'react';
+import {render, fireEvent} from '@testing-library/react-native';
+import MyButton from '../src/components/MyButton';
 
-```bash
-# Install Java 17
-brew install openjdk@17
+describe('MyButton', () => {
+  it('renders and handles press', () => {
+    const onPress = jest.fn();
+    const {getByText, toJSON} = render(
+      <MyButton onPress={onPress} title="Click me" />,
+    );
 
-# Add to ~/.zshrc
-export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
-export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
+    // Test interaction
+    fireEvent.press(getByText('Click me'));
+    expect(onPress).toHaveBeenCalled();
 
-# Reload shell
-source ~/.zshrc
-
-# Build Android
-cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
+    // Snapshot
+    expect(toJSON()).toMatchSnapshot();
+  });
+});
 ```
 
-## 🚀 Fastest Iteration Cycle
+## Best Practices
 
-For most development work:
+### ✅ Do
 
-1. Make changes
-2. Run `npm run lint && npm test` (takes ~5 seconds)
-3. If linting/tests pass, push to GitHub
-4. CI will run the full Android E2E build
+- Write focused tests that verify specific behavior
+- Take full-screen snapshots for UI review
+- Update snapshots consciously after UI changes
+- Review snapshot diffs in PRs carefully
+- Keep tests fast and isolated
 
-Only run the full Android build locally when:
+### ❌ Don't
 
-- You're debugging Android-specific issues
-- You want to verify the build before creating a PR
-- CI keeps failing and you need to debug
+- Update snapshots blindly without reviewing changes
+- Test implementation details
+- Make tests dependent on each other
+- Skip snapshot reviews in PRs
 
-## 📝 Current Test Status
+## Mocking
 
-- ✅ **Unit tests**: 10/10 passing
-- ✅ **Linting**: 0 errors, 4 warnings (acceptable)
-- ✅ **TypeScript**: No compilation errors
-- 🔨 **iOS E2E**: Should work (you have Xcode)
-- 🐳 **Android E2E**: Can use Docker approach
+### Skia Components
+
+Skia components are automatically mocked in `jest.setup.js`:
+
+```javascript
+jest.mock('@shopify/react-native-skia', () => ({
+  Canvas: 'Canvas',
+  Circle: 'Circle',
+  // ... other mocks
+}));
+```
+
+### Gesture Handler
+
+Gesture handler is mocked to prevent native module errors:
+
+```javascript
+jest.mock('react-native-gesture-handler', () => ({
+  GestureHandlerRootView: 'GestureHandlerRootView',
+  // ... other mocks
+}));
+```
+
+## Troubleshooting
+
+### Tests fail after React Native upgrade
+
+1. Delete `node_modules` and `package-lock.json`
+2. Run `npm install`
+3. Clear Jest cache: `npx jest --clearCache`
+4. Update snapshots if UI changed: `npm run test:update-snapshots`
+
+### Snapshot diff is too large
+
+This usually means:
+
+- Major UI changes were made
+- Component props changed significantly
+- Consider reviewing the changes carefully before updating
+
+### CI fails but tests pass locally
+
+1. Check Node.js version matches CI (v18)
+2. Use `npm ci` instead of `npm install`
+3. Check for platform-specific code
+4. Review CI logs for specific errors
+
+## Coverage Goals
+
+Aim for:
+
+- **80%+ statement coverage** for new code
+- **70%+ branch coverage** for conditional logic
+- **100% coverage** for critical game logic
+
+Coverage reports are generated in `coverage/` directory after running tests.
