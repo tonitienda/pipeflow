@@ -101,6 +101,7 @@ const PipeflowScreen = () => {
   const [selectedComponent, setSelectedComponent] = useState<Component | null>(
     null,
   );
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   const currentLevel = levels[currentLevelIndex];
 
@@ -114,14 +115,54 @@ const PipeflowScreen = () => {
     );
   }, [currentLevel]);
 
-  const handleComponentTap = useCallback((component: Component) => {
-    console.log('Component tapped:', component);
-    setSelectedComponent(prev => {
-      const newSelection = prev?.id === component.id ? null : component;
-      console.log('New selected component:', newSelection);
-      return newSelection;
-    });
-  }, []);
+  const handleComponentTap = useCallback(
+    (component: Component) => {
+      console.log('Component tapped:', component);
+
+      // If a slot is selected, place the component there
+      if (selectedSlot) {
+        console.log('Placing component in selected slot:', selectedSlot);
+
+        const newLevels = levels.map((level, idx) => {
+          if (idx !== currentLevelIndex) return level;
+
+          const newSlots = level.slots.map(s => {
+            if (s.id !== selectedSlot) return s;
+
+            const isAccepted =
+              !s.acceptedComponents ||
+              s.acceptedComponents.includes(component.id);
+
+            if (isAccepted && !s.placedComponent) {
+              return {
+                ...s,
+                placedComponent: {...component, slotId: s.id},
+              };
+            }
+            return s;
+          });
+
+          return {
+            ...level,
+            slots: newSlots,
+          };
+        });
+
+        setLevels(newLevels);
+        setSelectedSlot(null);
+        setSelectedComponent(null);
+        return;
+      }
+
+      // Otherwise, toggle component selection
+      setSelectedComponent(prev => {
+        const newSelection = prev?.id === component.id ? null : component;
+        console.log('New selected component:', newSelection);
+        return newSelection;
+      });
+    },
+    [selectedSlot, levels, currentLevelIndex],
+  );
 
   const handleSlotTap = useCallback(
     (slotId: string) => {
@@ -159,7 +200,9 @@ const PipeflowScreen = () => {
               };
             }
           } else {
-            console.log('No component selected');
+            // No component selected, so select this slot
+            console.log('Selecting slot for component placement');
+            setSelectedSlot(slotId);
           }
 
           return s;
@@ -175,6 +218,7 @@ const PipeflowScreen = () => {
       setLevels(newLevels);
       if (selectedComponent) {
         setSelectedComponent(null);
+        setSelectedSlot(null);
       }
     },
     [selectedComponent, levels, currentLevelIndex],
@@ -470,6 +514,7 @@ const PipeflowScreen = () => {
           {/* Component slots */}
           {currentLevel.slots.map(slot => {
             const comp = slot.placedComponent;
+            const isSelected = selectedSlot === slot.id;
             console.log('Rendering slot:', slot.id, 'placedComponent:', comp);
 
             return (
@@ -485,8 +530,12 @@ const PipeflowScreen = () => {
                   backgroundColor: comp ? '#60A5FA' : '#E5E7EB',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  borderWidth: 2,
-                  borderColor: comp ? '#3B82F6' : '#D1D5DB',
+                  borderWidth: isSelected ? 3 : 2,
+                  borderColor: isSelected
+                    ? '#FCD34D'
+                    : comp
+                    ? '#3B82F6'
+                    : '#D1D5DB',
                 }}>
                 {comp && (
                   <Text
