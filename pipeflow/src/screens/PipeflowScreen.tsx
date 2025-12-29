@@ -6,7 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import {Canvas, Circle, Path, Skia} from '@shopify/react-native-skia';
+import Svg, {Path, Circle, Line} from 'react-native-svg';
 import {Level, Component, Position} from '../types/pipeflow';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -464,18 +464,83 @@ const PipeflowScreen = () => {
             height: BOARD_HEIGHT,
             position: 'relative',
           }}>
-          {/* Board background */}
+          {/* Board background with gradient effect */}
           <View
             style={{
               width: BOARD_WIDTH,
               height: BOARD_HEIGHT,
               position: 'absolute',
-              backgroundColor: '#F3F4F6',
-              borderRadius: 12,
+              backgroundColor: '#1E293B',
+              borderRadius: 16,
+              shadowColor: '#000',
+              shadowOffset: {width: 0, height: 4},
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           />
 
-          {/* Input node */}
+          {/* Connection lines using SVG */}
+          <Svg
+            width={BOARD_WIDTH}
+            height={BOARD_HEIGHT}
+            style={{position: 'absolute'}}>
+            {currentLevel.connections.map(conn => {
+              let fromPos: Position = inputPos;
+              let toPos: Position = outputPos;
+
+              if (conn.from === 'input') {
+                fromPos = inputPos;
+              } else {
+                const fromSlot = currentLevel.slots.find(
+                  s => s.id === conn.from,
+                );
+                if (fromSlot) fromPos = fromSlot.position;
+              }
+
+              if (conn.to === 'output') {
+                toPos = outputPos;
+              } else {
+                const toSlot = currentLevel.slots.find(s => s.id === conn.to);
+                if (toSlot) {
+                  toPos = toSlot.position;
+                  if (
+                    conn.toPort !== undefined &&
+                    toSlot.placedComponent?.inputPorts === 2
+                  ) {
+                    toPos = {
+                      x: toPos.x - (conn.toPort === 0 ? 20 : -20),
+                      y: toPos.y - COMPONENT_HEIGHT / 2,
+                    };
+                  }
+                }
+              }
+
+              const startY =
+                fromPos.y +
+                (conn.from === 'input' ? NODE_RADIUS : COMPONENT_HEIGHT / 2);
+              const endY =
+                toPos.y -
+                (conn.to === 'output' ? NODE_RADIUS : COMPONENT_HEIGHT / 2);
+              const midY = (startY + endY) / 2;
+
+              // Create curved path
+              const pathData = `M ${fromPos.x} ${startY} C ${fromPos.x} ${midY}, ${toPos.x} ${midY}, ${toPos.x} ${endY}`;
+
+              return (
+                <Path
+                  key={conn.id}
+                  d={pathData}
+                  stroke="#60A5FA"
+                  strokeWidth={3}
+                  fill="none"
+                  opacity={0.7}
+                />
+              );
+            })}
+          </Svg>
+
+          {/* Input node with glow effect */}
           <View
             style={{
               position: 'absolute',
@@ -487,13 +552,23 @@ const PipeflowScreen = () => {
               backgroundColor: '#14B8A6',
               justifyContent: 'center',
               alignItems: 'center',
+              shadowColor: '#14B8A6',
+              shadowOffset: {width: 0, height: 0},
+              shadowOpacity: 0.6,
+              shadowRadius: 12,
+              elevation: 8,
             }}>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: '#FFFFFF'}}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: '#FFFFFF',
+              }}>
               {currentLevel.inputValue}
             </Text>
           </View>
 
-          {/* Output node */}
+          {/* Output node with glow effect */}
           <View
             style={{
               position: 'absolute',
@@ -505,8 +580,18 @@ const PipeflowScreen = () => {
               backgroundColor: '#8B5CF6',
               justifyContent: 'center',
               alignItems: 'center',
+              shadowColor: '#8B5CF6',
+              shadowOffset: {width: 0, height: 0},
+              shadowOpacity: 0.6,
+              shadowRadius: 12,
+              elevation: 8,
             }}>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: '#FFFFFF'}}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: '#FFFFFF',
+              }}>
               {currentLevel.goalValue}
             </Text>
           </View>
@@ -526,25 +611,40 @@ const PipeflowScreen = () => {
                   top: slot.position.y - COMPONENT_HEIGHT / 2,
                   width: COMPONENT_WIDTH,
                   height: COMPONENT_HEIGHT,
-                  borderRadius: 12,
-                  backgroundColor: comp ? '#60A5FA' : '#E5E7EB',
+                  borderRadius: 16,
+                  backgroundColor: comp ? '#3B82F6' : '#475569',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  borderWidth: isSelected ? 3 : 2,
+                  borderWidth: isSelected ? 4 : comp ? 3 : 2,
                   borderColor: isSelected
                     ? '#FCD34D'
                     : comp
-                    ? '#3B82F6'
-                    : '#D1D5DB',
+                    ? '#60A5FA'
+                    : '#64748B',
+                  shadowColor: comp ? '#3B82F6' : '#000',
+                  shadowOffset: {width: 0, height: comp ? 0 : 2},
+                  shadowOpacity: comp ? 0.5 : 0.2,
+                  shadowRadius: comp ? 8 : 4,
+                  elevation: comp ? 6 : 2,
                 }}>
                 {comp && (
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: 'bold',
                       color: '#FFFFFF',
                     }}>
                     {comp.symbol}
+                  </Text>
+                )}
+                {!comp && (
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: '600',
+                      color: '#94A3B8',
+                    }}>
+                    ?
                   </Text>
                 )}
               </View>
@@ -614,7 +714,7 @@ const PipeflowScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#0F172A',
   },
   header: {
     paddingTop: 50,
@@ -623,18 +723,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#1E293B',
+    borderBottomWidth: 2,
+    borderBottomColor: '#334155',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#60A5FA',
+    letterSpacing: 2,
   },
   levelText: {
     fontSize: 18,
-    color: '#64748B',
+    fontWeight: '600',
+    color: '#94A3B8',
   },
   boardContainer: {
     flex: 1,
@@ -649,50 +751,61 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   navButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#60A5FA',
-    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#3B82F6',
+    borderRadius: 12,
+    shadowColor: '#3B82F6',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
   },
   navButtonDisabled: {
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#475569',
+    shadowOpacity: 0,
   },
   navButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   tray: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    gap: 20,
+    backgroundColor: '#1E293B',
+    borderTopWidth: 2,
+    borderTopColor: '#334155',
+    gap: 16,
   },
   componentCard: {
     width: COMPONENT_WIDTH,
     height: COMPONENT_HEIGHT,
-    backgroundColor: '#60A5FA',
-    borderRadius: 12,
+    backgroundColor: '#3B82F6',
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 3,
+    borderColor: '#60A5FA',
+    shadowColor: '#3B82F6',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   componentCardSelected: {
     backgroundColor: '#2563EB',
-    borderWidth: 3,
-    borderColor: '#F59E0B',
+    borderColor: '#FCD34D',
+    borderWidth: 4,
+    shadowColor: '#FCD34D',
+    shadowOpacity: 0.6,
+    transform: [{scale: 1.05}],
   },
   componentText: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#FFFFFF',
   },
 });
