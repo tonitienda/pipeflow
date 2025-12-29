@@ -105,6 +105,17 @@ const PipeflowScreen = () => {
 
   const currentLevel = levels[currentLevelIndex];
 
+  // Helper to check if a slot needs multiple input ports
+  const slotHasMultipleInputs = useCallback(
+    (slotId: string) => {
+      const inputConnections = currentLevel.connections.filter(
+        conn => conn.to === slotId && conn.toPort !== undefined,
+      );
+      return inputConnections.length > 1;
+    },
+    [currentLevel],
+  );
+
   // Get components that haven't been placed yet
   const getAvailableComponents = useCallback(() => {
     const placedComponentIds = currentLevel.slots
@@ -504,9 +515,11 @@ const PipeflowScreen = () => {
                 const toSlot = currentLevel.slots.find(s => s.id === conn.to);
                 if (toSlot) {
                   toPos = toSlot.position;
+                  // Adjust for input ports if this connection specifies a port
+                  // This works for both empty slots and filled slots with multi-input components
                   if (
                     conn.toPort !== undefined &&
-                    toSlot.placedComponent?.inputPorts === 2
+                    slotHasMultipleInputs(toSlot.id)
                   ) {
                     toPos = {
                       x: toPos.x - (conn.toPort === 0 ? 20 : -20),
@@ -519,9 +532,15 @@ const PipeflowScreen = () => {
               const startY =
                 fromPos.y +
                 (conn.from === 'input' ? NODE_RADIUS : COMPONENT_HEIGHT / 2);
-              const endY =
-                toPos.y -
-                (conn.to === 'output' ? NODE_RADIUS : COMPONENT_HEIGHT / 2);
+
+              // Calculate endY - if toPos was already adjusted for ports, don't adjust again
+              const isToPortAdjusted =
+                conn.toPort !== undefined && conn.to !== 'output';
+              const endY = isToPortAdjusted
+                ? toPos.y
+                : toPos.y -
+                  (conn.to === 'output' ? NODE_RADIUS : COMPONENT_HEIGHT / 2);
+
               const midY = (startY + endY) / 2;
 
               // Create curved path
@@ -649,6 +668,44 @@ const PipeflowScreen = () => {
                 )}
               </View>
             );
+          })}
+
+          {/* Input port indicators for slots that need multiple inputs */}
+          {currentLevel.slots.map(slot => {
+            const hasMultipleInputs = slotHasMultipleInputs(slot.id);
+            if (hasMultipleInputs) {
+              return (
+                <React.Fragment key={`ports-${slot.id}`}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: slot.position.x - 20 - 6,
+                      top: slot.position.y - COMPONENT_HEIGHT / 2 - 6,
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: '#1E293B',
+                      borderWidth: 2,
+                      borderColor: '#60A5FA',
+                    }}
+                  />
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: slot.position.x + 20 - 6,
+                      top: slot.position.y - COMPONENT_HEIGHT / 2 - 6,
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: '#1E293B',
+                      borderWidth: 2,
+                      borderColor: '#60A5FA',
+                    }}
+                  />
+                </React.Fragment>
+              );
+            }
+            return null;
           })}
 
           {/* Touchable slot overlays */}
