@@ -87,8 +87,8 @@ const createLevels = (): Level[] => {
       ],
       connections: [
         {id: 'conn1', from: 'input', to: 'slot1'},
-        {id: 'conn2', from: 'input', to: 'slot2', toPort: 0},
-        {id: 'conn3', from: 'slot1', to: 'slot2', toPort: 1},
+        {id: 'conn2', from: 'input', to: 'slot2', toPort: 1},
+        {id: 'conn3', from: 'slot1', to: 'slot2', toPort: 0},
         {id: 'conn4', from: 'slot2', to: 'output'},
       ],
     },
